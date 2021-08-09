@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const bcrypt= require('bcrypt')
 const port = process.env.PORT || 5000;
 
 require("./db/conn");
@@ -12,12 +13,25 @@ app.get('/',(req,res)=>{
     res.sendFile(path.join(__dirname+'/index.html'));
 });
 
-app.post('/signup', async(req,res)=>{
-    try { 
-        const confirmpass=req.body.confirmpassword;
-        const pass=req.body.password;
 
-        if (pass===confirmpass){
+
+app.post('/signup', async(req,res)=>{
+
+    try { 
+
+
+        
+        const confirmpassPasswordtoBeHashed=req.body.confirmpassword;
+        const round=10;
+const passwordTobeHashed=req.body.password;
+bcrypt.hash(passwordTobeHashed, round, (err, hash) => {
+hashedpassword=hash;
+  });
+bcrypt.hash(confirmpassPasswordtoBeHashed, round, (err, hashed) => {
+hashedconfirmpassword=hashed;
+  });
+
+    if (passwordTobeHashed===confirmpassPasswordtoBeHashed){
             const newuser = new User({
                 fname:req.body.fname,
                 lname:req.body.lname,
@@ -25,8 +39,8 @@ app.post('/signup', async(req,res)=>{
                 gender:req.body.gender,
                 phone:req.body.phone,
                 address:req.body.address,
-                password:req.body.password,
-                confirmpassword:req.body.confirmpassword
+               password:hashedpassword,
+                confirmpassword:hashedconfirmpassword
             });
             await newuser.save();
             res.status(201).send("Sign Up Sucessfull!! _ Login into Account !! ");

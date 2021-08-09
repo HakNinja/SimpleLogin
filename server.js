@@ -19,7 +19,9 @@ app.post('/signup', async(req,res)=>{
             lname:req.body.lname,
             email:req.body.email,
             password:req.body.password,
-            gender:req.body.gender
+            gender:req.body.gender,
+            phone:req.body.phone,
+            address:req.body.address
         });
         await newuser.save();
         res.status(201).send("Data saved");

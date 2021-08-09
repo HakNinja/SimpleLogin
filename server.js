@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 require("./db/conn");
 const User = require('./models/signup');
@@ -14,17 +14,26 @@ app.get('/',(req,res)=>{
 
 app.post('/signup', async(req,res)=>{
     try { 
-        const newuser = new User({
-            fname:req.body.fname,
-            lname:req.body.lname,
-            email:req.body.email,
-            password:req.body.password,
-            gender:req.body.gender,
-            phone:req.body.phone,
-            address:req.body.address
-        });
-        await newuser.save();
-        res.status(201).send("Data saved");
+        const confirmpass=req.body.confirmpassword;
+        const pass=req.body.password;
+
+        if (pass===confirmpass){
+            const newuser = new User({
+                fname:req.body.fname,
+                lname:req.body.lname,
+                email:req.body.email,
+                gender:req.body.gender,
+                phone:req.body.phone,
+                address:req.body.address,
+                password:req.body.password,
+                confirmpassword:req.body.confirmpassword
+            });
+            await newuser.save();
+            res.status(201).send("Sign Up Sucessfull!! _ Login into Account !! ");
+        }
+        else{
+           res.status(400).send("Password not Matched !!! Try Again !!!!!")
+        }
     } catch (error) {
         res.status(400).send(error);
     }
@@ -39,10 +48,12 @@ app.post('/signin', async(req,res)=>{
         const email=req.body.email;
         const password=req.body.password;
         const temp = await User.findOne({email:email});
-        if( temp.email === email && temp.password === password ){
-            res.status(201).send("Valid user");    
-        } else {
-            res.status(201).send("Database Error");                   
+  
+        if( temp.email === email && temp.password===password  ){
+            res.status(201).send("Login Sucessfull");    
+         
+        }else {
+            res.status(201).send("Invalid Credentials...Please Try Again!!");                   
         }
     } catch (error) {
         res.status(400).send(error);

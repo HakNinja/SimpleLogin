@@ -19,14 +19,14 @@ app.post('/signup', async(req,res)=>{
 
     try { 
 
-
+        const round=10;
+        
+        const passwordTobeHashed=req.body.password;
+        bcrypt.hash(passwordTobeHashed, round, (err, hash) => {
+            hashedpassword=hash;
+        });
         
         const confirmpassPasswordtoBeHashed=req.body.confirmpassword;
-        const round=10;
-const passwordTobeHashed=req.body.password;
-bcrypt.hash(passwordTobeHashed, round, (err, hash) => {
-hashedpassword=hash;
-  });
 bcrypt.hash(confirmpassPasswordtoBeHashed, round, (err, hashed) => {
 hashedconfirmpassword=hashed;
   });
@@ -59,9 +59,11 @@ app.get('/signin',(req,res)=>{
 
 app.post('/signin', async(req,res)=>{
     try {
-        const email=req.body.email;
+      
         const password=req.body.password;
-        const temp = await User.findOne({email:email});
+        const temp = await User.findOne({email:body.email});
+        // const hashedpassDb= await User.findOne({password:password})
+        
   
         if( temp.email === email && temp.password===password  ){
             res.status(201).send("Login Sucessfull");    

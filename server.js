@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const bcrypt= require('bcrypt')
+const bcrypt= require('bcrypt');
 const port = process.env.PORT || 5000;
 
 require("./db/conn");
@@ -13,25 +13,16 @@ app.get('/',(req,res)=>{
     res.sendFile(path.join(__dirname+'/index.html'));
 });
 
-
-
 app.post('/signup', async(req,res)=>{
-
     try { 
-
-        const round=10;
-        
+                
         const passwordTobeHashed=req.body.password;
-        bcrypt.hash(passwordTobeHashed, round, (err, hash) => {
-            hashedpassword=hash;
-        });
+        const hashedpassword = await bcrypt.hash(passwordTobeHashed,10);
         
         const confirmpassPasswordtoBeHashed=req.body.confirmpassword;
-bcrypt.hash(confirmpassPasswordtoBeHashed, round, (err, hashed) => {
-hashedconfirmpassword=hashed;
-  });
+        const hashedconfirmpassword = await bcrypt.hash(confirmpassPasswordtoBeHashed,10);
 
-    if (passwordTobeHashed===confirmpassPasswordtoBeHashed){
+        if (passwordTobeHashed===confirmpassPasswordtoBeHashed){
             const newuser = new User({
                 fname:req.body.fname,
                 lname:req.body.lname,
@@ -39,17 +30,16 @@ hashedconfirmpassword=hashed;
                 gender:req.body.gender,
                 phone:req.body.phone,
                 address:req.body.address,
-               password:hashedpassword,
+                password:hashedpassword,
                 confirmpassword:hashedconfirmpassword
             });
             await newuser.save();
-            res.status(201).send("Sign Up Sucessfull!! _ Login into Account !! ");
-        }
-        else{
+            res.status(201).send("Sign Up Sucessfull!! _ Login into Account !!");
+        } else {
            res.status(400).send("Password not Matched !!! Try Again !!!!!")
         }
     } catch (error) {
-        res.status(400).send(error);
+        res.status(400).send("<h1>Server error</h1> or account already exists with the phone no. or email.<br/>"+error);
     }
 });
 
@@ -59,16 +49,11 @@ app.get('/signin',(req,res)=>{
 
 app.post('/signin', async(req,res)=>{
     try {
-      
-        const password=req.body.password;
-        const temp = await User.findOne({email:body.email});
-        // const hashedpassDb= await User.findOne({password:password})
-        
-  
-        if( temp.email === email && temp.password===password  ){
-            res.status(201).send("Login Sucessfull");    
-         
-        }else {
+        const temp = await User.findOne({email:req.body.email});
+        const isMatched = await bcrypt.compare(req.body.password,temp.password);
+        if (temp.email === req.body.email && isMatched){
+            res.status(201).send("Login Successfully");    
+        } else {
             res.status(201).send("Invalid Credentials...Please Try Again!!");                   
         }
     } catch (error) {
